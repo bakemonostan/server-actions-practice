@@ -4,22 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import LoginAction from "../_actions/loginAction";
-
-const clientAction = async (formData: FormData) => {
-  const { data, message } = await LoginAction(formData);
-  console.log(message, data);
-};
+import { useFormState, useFormStatus } from "react-dom";
 
 export default function LoginPage() {
+  const [state, action] = useFormState(LoginAction, undefined);
   return (
     <div className="max-w-xl mx-auto p-7">
       <h1 className="text-4xl  text-center font-bold">Login</h1>
-      <form className="space-y-3 pt-5" action={clientAction} method="POST">
+      <form className="space-y-3 pt-5" action={action} method="POST">
         <div className="space-y-3">
           <Label htmlFor="email" className="font-semibold">
             Email
           </Label>
           <Input id="email" type="email" name="email" autoComplete="email" />
+          {state?.errors?.email && (
+            <p className="text-sm text-red-500">{state.errors.email}</p>
+          )}
         </div>
         <div className="space-y-3">
           <Label htmlFor="password" className="font-semibold">
@@ -31,13 +31,24 @@ export default function LoginPage() {
             name="password"
             autoComplete="current-password"
           />
+          {state?.errors?.password && (
+            <p className="text-sm text-red-500">{state.errors.password}</p>
+          )}
         </div>
         <div className="text-center pt-5">
-          <Button type="submit" className="w-1/3">
-            Login
-          </Button>
+          <LoginButton />
         </div>
       </form>
     </div>
+  );
+}
+
+export function LoginButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button aria-disabled={pending} type="submit" className="mt-4 w-full">
+      {pending ? "Submitting..." : "Sign in"}
+    </Button>
   );
 }

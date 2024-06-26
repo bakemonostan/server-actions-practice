@@ -33,10 +33,8 @@ api.interceptors.response.use(
     let errorMessage = "An unknown error occurred";
     if (error.response) {
       if (error.response.status === 401) {
-        // deleteCookie("token");
-        // deleteCookie("user_type");
-        // deleteCookie("username");
-        // window.location.href = "/login";
+        errorMessage = "Unauthorized";
+        cookies().delete("token");
       }
       errorMessage = error.response.data.message;
     } else if (error.request) {

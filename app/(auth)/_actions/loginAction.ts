@@ -2,32 +2,49 @@
 import { api } from "@/config/api";
 import { ApiResponse, UserData } from "../_types/index";
 import { cookies } from "next/headers";
+import { z } from "zod";
 
-interface Result {
-  data: UserData | null;
-  message?: string;
-  token?: string | null;
-}
+type Result =
+  | {
+      data?: UserData | null;
+      message?: string;
+      token?: string | null;
+      errors?: {
+        name?: string[];
+        email?: string[];
+        password?: string[];
+      };
+    }
+  | undefined;
 
-export default async function LoginAction(formdata: FormData): Promise<Result> {
-  const email = formdata.get("email");
-  const password = formdata.get("password");
-  if (!email || !password) {
+const LoginFormSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email." }),
+  password: z.string().min(1, { message: "Password field must not be empty." }),
+});
+
+export default async function LoginAction(
+  state: Result,
+  formData: FormData
+): Promise<Result> {
+  const validatedFields = LoginFormSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+  const errorMessage = { message: "Invalid login credentials." };
+
+  // If any form fields are invalid, return early
+  if (!validatedFields.success) {
     return {
-      data: null,
-      message: "All fields are required",
-      token: null,
+      errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
   try {
-    const res = await api.post<ApiResponse>("/login", {
-      email,
-      password,
-    });
+    const res = await api.post<ApiResponse>("/login", validatedFields.data);
 
     if (res.data) {
       cookies().set("token", res.data.token);
+      console.log(res.data.data);
       return {
         data: res.data.data,
         message: res.data.message,
