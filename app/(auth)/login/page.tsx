@@ -43,12 +43,12 @@ export default function LoginPage() {
   );
 }
 
-export function LoginButton() {
-  const { pending } = useFormStatus();
+ function LoginButton() {
+   const { pending } = useFormStatus();
 
-  return (
-    <Button aria-disabled={pending} type="submit" className="mt-4 w-full">
-      {pending ? "Submitting..." : "Sign in"}
-    </Button>
-  );
-}
+   return (
+     <Button aria-disabled={pending} type="submit" className="mt-4 w-full">
+       {pending ? "Submitting..." : "Sign in"}
+     </Button>
+   );
+ }
